@@ -6,7 +6,22 @@
   "functions": {
     "api/index.py": {
       "maxDuration": 300,
-      "memory": 2048
+      "memory": 2048,
+      "excludeFiles": [
+        "tests/**",
+        "dataset/**",
+        "assets/**",
+        "scripts/**",
+        "*.pdf",
+        ".github/**",
+        ".pre-commit-config.yaml"
+      ]
+    }
+  },
+  "build": {
+    "env": {
+      "VERCEL_SUPPORT_LARGE_FUNCTIONS": "1",
+      "UV_EXTRA_INDEX_URL": "https://download.pytorch.org/whl/cpu"
     }
   }
 }
