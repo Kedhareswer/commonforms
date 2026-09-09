@@ -7,15 +7,7 @@
     "api/index.py": {
       "maxDuration": 300,
       "memory": 2048,
-      "excludeFiles": [
-        "tests/**",
-        "dataset/**",
-        "assets/**",
-        "scripts/**",
-        "*.pdf",
-        ".github/**",
-        ".pre-commit-config.yaml"
-      ]
+      "excludeFiles": "{tests,dataset,assets,scripts,.github}/**"
     }
   },
   "build": {
