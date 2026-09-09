@@ -1,0 +1,17 @@
+.venv
+.vercel
+.pytest_cache
+.ruff_cache
+tests
+dataset
+assets
+scripts
+*.pdf
+output_fillable.pdf
+__pycache__
+*.pyc
+*.egg-info
+dist
+build
+.github
+.pre-commit-config.yaml

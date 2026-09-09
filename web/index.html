@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CommonForms — Make any PDF fillable</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --panel: #121830;
+    --panel-2: #181f3d;
+    --border: #2a3358;
+    --text: #e8ecf8;
+    --muted: #9aa3c4;
+    --accent: #6c8cff;
+    --accent-2: #8a6cff;
+    --success: #3ddc97;
+    --danger: #ff6b7a;
+    --radius: 16px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+    background:
+      radial-gradient(1000px 500px at 15% -10%, rgba(108, 140, 255, 0.16), transparent 60%),
+      radial-gradient(900px 500px at 90% 110%, rgba(138, 108, 255, 0.14), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 640px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+    padding: 36px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 22px;
+    letter-spacing: 0.2px;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    margin: 0 0 24px 0;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .dropzone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 34px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    background: var(--panel-2);
+  }
+
+  .dropzone:hover, .dropzone.dragover {
+    border-color: var(--accent);
+    background: rgba(108, 140, 255, 0.07);
+  }
+
+  .dropzone .dz-icon {
+    font-size: 34px;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+
+  .dropzone .dz-main {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .dropzone .dz-sub {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .file-chip {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: rgba(108, 140, 255, 0.10);
+    border: 1px solid rgba(108, 140, 255, 0.35);
+    font-size: 14px;
+  }
+
+  .file-chip.show { display: flex; }
+
+  .file-chip .fname {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .file-chip .fsize { color: var(--muted); font-size: 12px; margin-left: 8px; }
+
+  .file-chip .remove {
+    cursor: pointer;
+    color: var(--muted);
+    background: none;
+    border: none;
+    font-size: 16px;
+    padding: 2px 6px;
+  }
+
+  .file-chip .remove:hover { color: var(--danger); }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    margin: 26px 0 10px 0;
+  }
+
+  .model-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .model-option {
+    flex: 1 1 200px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    background: var(--panel-2);
+  }
+
+  .model-option:hover { border-color: var(--accent); }
+
+  .model-option.selected {
+    border-color: var(--accent);
+    background: rgba(108, 140, 255, 0.10);
+  }
+
+  .model-option .m-name { font-weight: 600; font-size: 14px; }
+  .model-option .m-desc { color: var(--muted); font-size: 12px; margin-top: 3px; }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  input[type="range"] {
+    flex: 1;
+    accent-color: var(--accent);
+  }
+
+  .confidence-val {
+    min-width: 52px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+  }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 14px;
+    color: var(--text);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .option input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .option .hint {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .option .opt-text { display: flex; flex-direction: column; }
+
+  .convert-btn {
+    width: 100%;
+    margin-top: 26px;
+    padding: 15px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.1s ease;
+  }
+
+  .convert-btn:hover:not(:disabled) { opacity: 0.92; }
+  .convert-btn:active:not(:disabled) { transform: scale(0.99); }
+  .convert-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .progress {
+    display: none;
+    margin-top: 22px;
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .progress.show { display: block; }
+
+  .spinner {
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    border: 3px solid rgba(108, 140, 255, 0.25);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .progress .status {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .result {
+    display: none;
+    margin-top: 22px;
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(61, 220, 151, 0.08);
+    border: 1px solid rgba(61, 220, 151, 0.4);
+  }
+
+  .result.show { display: block; }
+
+  .result .r-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+  }
+
+  .result .r-msg { color: var(--muted); font-size: 13px; margin: 6px 0 14px 0; }
+
+  .download-btn {
+    display: inline-block;
+    padding: 10px 18px;
+    border-radius: 10px;
+    background: var(--success);
+    color: #06281c;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 14px;
+  }
+
+  .error {
+    display: none;
+    margin-top: 22px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: rgba(255, 107, 122, 0.08);
+    border: 1px solid rgba(255, 107, 122, 0.4);
+    color: var(--danger);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .error.show { display: block; }
+
+  .footer-note {
+    margin-top: 24px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .footer-note code {
+    background: var(--panel-2);
+    padding: 2px 6px;
+    border-radius: 5px;
+  }
+
+  @media (max-width: 520px) {
+    .card { padding: 24px 18px; }
+    .options-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">
+      <div class="logo">Cf</div>
+      <h1>CommonForms</h1>
+    </div>
+    <p class="subtitle">
+      Upload a plain PDF and get back a <strong>fillable</strong> version —
+      text boxes, checkboxes and signature fields are detected automatically
+      with computer vision.
+    </p>
+
+    <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose a PDF file">
+      <div class="dz-icon">📄</div>
+      <div class="dz-main">Drag &amp; drop your PDF here</div>
+      <div class="dz-sub">or click to browse · up to 4.5 MB</div>
+      <input type="file" id="fileInput" accept="application/pdf,.pdf" hidden />
+    </div>
+
+    <div class="file-chip" id="fileChip">
+      <span class="fname" id="fileName"></span>
+      <span class="fsize" id="fileSize"></span>
+      <button class="remove" id="removeFile" title="Remove file" aria-label="Remove file">✕</button>
+    </div>
+
+    <div class="section-title">Detection model</div>
+    <div class="model-row" id="modelRow">
+      <div class="model-option selected" data-model="ffdnet-l" role="radio" aria-checked="true" tabindex="0">
+        <div class="m-name">FFDNet-L</div>
+        <div class="m-desc">ONNX · fast · best default</div>
+      </div>
+      <div class="model-option" data-model="ffdetr" role="radio" aria-checked="false" tabindex="0">
+        <div class="m-name">FFDetr</div>
+        <div class="m-desc">RF-DETR · higher accuracy, slower</div>
+      </div>
+    </div>
+
+    <div class="section-title">Confidence threshold</div>
+    <div class="slider-row">
+      <input type="range" id="confidence" min="0.1" max="0.9" step="0.05" value="0.3" />
+      <span class="confidence-val" id="confidenceVal">0.30</span>
+    </div>
+
+    <div class="section-title">Options</div>
+    <div class="options-grid">
+      <label class="option">
+        <input type="checkbox" id="multiline" />
+        <span class="opt-text">Multiline text boxes<span class="hint">Allow wrapped input</span></span>
+      </label>
+      <label class="option">
+        <input type="checkbox" id="signatureFields" />
+        <span class="opt-text">Signature fields<span class="hint">Detect "signature" labels</span></span>
+      </label>
+      <label class="option">
+        <input type="checkbox" id="keepExisting" />
+        <span class="opt-text">Keep existing fields<span class="hint">Don't clear current form fields</span></span>
+      </label>
+    </div>
+
+    <button class="convert-btn" id="convertBtn" disabled>Convert to fillable PDF</button>
+
+    <div class="progress" id="progress">
+      <div class="spinner"></div>
+      <div class="status" id="statusText">Uploading…</div>
+    </div>
+
+    <div class="result" id="result">
+      <div class="r-head">✅ Done — your fillable PDF is ready</div>
+      <div class="r-msg">Open it in any PDF viewer and start typing. Fields are tab-orderable.</div>
+      <a class="download-btn" id="downloadLink" download>Download PDF</a>
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <div class="footer-note">
+      Powered by <code>commonforms</code> · your file is processed once and never stored
+    </div>
+  </div>
+
+<script>
+(function () {
+  const dropzone = document.getElementById("dropzone");
+  const fileInput = document.getElementById("fileInput");
+  const fileChip = document.getElementById("fileChip");
+  const fileName = document.getElementById("fileName");
+  const fileSize = document.getElementById("fileSize");
+  const removeFileBtn = document.getElementById("removeFile");
+  const modelRow = document.getElementById("modelRow");
+  const confidence = document.getElementById("confidence");
+  const confidenceVal = document.getElementById("confidenceVal");
+  const multiline = document.getElementById("multiline");
+  const signatureFields = document.getElementById("signatureFields");
+  const keepExisting = document.getElementById("keepExisting");
+  const convertBtn = document.getElementById("convertBtn");
+  const progress = document.getElementById("progress");
+  const statusText = document.getElementById("statusText");
+  const result = document.getElementById("result");
+  const downloadLink = document.getElementById("downloadLink");
+  const errorBox = document.getElementById("error");
+
+  let selectedFile = null;
+  let selectedModel = "ffdnet-l";
+
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / 1024 / 1024).toFixed(2) + " MB";
+  }
+
+  function setFile(file) {
+    if (!file) return;
+    selectedFile = file;
+    fileName.textContent = file.name;
+    fileSize.textContent = formatSize(file.size);
+    fileChip.classList.add("show");
+    convertBtn.disabled = false;
+    errorBox.classList.remove("show");
+  }
+
+  function clearFile() {
+    selectedFile = null;
+    fileInput.value = "";
+    fileChip.classList.remove("show");
+    convertBtn.disabled = true;
+  }
+
+  function openPicker() { fileInput.click(); }
+
+  dropzone.addEventListener("click", openPicker);
+  dropzone.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPicker(); }
+  });
+  dropzone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropzone.classList.add("dragover");
+  });
+  dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+  dropzone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("dragover");
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file) setFile(file);
+  });
+  fileInput.addEventListener("change", () => {
+    if (fileInput.files && fileInput.files[0]) setFile(fileInput.files[0]);
+  });
+  removeFileBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    clearFile();
+  });
+
+  modelRow.querySelectorAll(".model-option").forEach((opt) => {
+    opt.addEventListener("click", () => {
+      selectedModel = opt.dataset.model;
+      modelRow.querySelectorAll(".model-option").forEach((o) => {
+        o.classList.toggle("selected", o === opt);
+        o.setAttribute("aria-checked", o === opt ? "true" : "false");
+      });
+    });
+    opt.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        opt.click();
+      }
+    });
+  });
+
+  confidence.addEventListener("input", () => {
+    confidenceVal.textContent = Number(confidence.value).toFixed(2);
+  });
+
+  const statuses = [
+    "Uploading…",
+    "Rendering pages…",
+    "Detecting form fields…",
+    "Building fillable PDF…",
+    "Almost there…",
+  ];
+
+  convertBtn.addEventListener("click", async () => {
+    if (!selectedFile) return;
+
+    const form = new FormData();
+    form.append("file", selectedFile);
+    form.append("model", selectedModel);
+    form.append("confidence", confidence.value);
+    form.append("multiline", multiline.checked ? "true" : "false");
+    form.append("use_signature_fields", signatureFields.checked ? "true" : "false");
+    form.append("keep_existing_fields", keepExisting.checked ? "true" : "false");
+
+    convertBtn.disabled = true;
+    result.classList.remove("show");
+    errorBox.classList.remove("show");
+    progress.classList.add("show");
+
+    let step = 0;
+    statusText.textContent = statuses[0];
+    const ticker = setInterval(() => {
+      step = Math.min(step + 1, statuses.length - 1);
+      statusText.textContent = statuses[step];
+    }, 8000);
+
+    try {
+      const resp = await fetch("/convert", { method: "POST", body: form });
+
+      if (!resp.ok) {
+        let message = "Conversion failed (" + resp.status + ").";
+        try {
+          const json = await resp.json();
+          if (json && json.detail) message = json.detail;
+        } catch (_) { /* non-JSON error body */ }
+        throw new Error(message);
+      }
+
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const base = (selectedFile.name || "form").replace(/\.pdf$/i, "");
+      downloadLink.href = url;
+      downloadLink.setAttribute("download", "fillable_" + base + ".pdf");
+      result.classList.add("show");
+    } catch (err) {
+      errorBox.textContent = err.message || "Something went wrong. Please try again.";
+      errorBox.classList.add("show");
+    } finally {
+      clearInterval(ticker);
+      progress.classList.remove("show");
+      convertBtn.disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>
