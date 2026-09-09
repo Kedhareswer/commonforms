@@ -3,7 +3,8 @@
 *.pyc
 __pycache__
 *.egg-info
-uv.lock
 *.pdf
 dist
 .venv
+.vercel-repro
+.test-ocv

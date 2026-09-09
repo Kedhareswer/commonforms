@@ -16,6 +16,7 @@ dependencies = [
     "onnx>=1.19.1",
     "onnxruntime>=1.23.1",
     "onnxslim>=0.1.71",
+    "opencv-python-headless==5.0.0.93",
     "pillow>=11.3.0",
     "pydantic>=2.11.9",
     "pypdf>=6.1.1",
@@ -44,6 +45,9 @@ dev = [
     "pytest>=8.4.2",
     "ruff>=0.14.0",
 ]
+
+[tool.uv]
+override-dependencies = ["opencv-python ; sys_platform == 'never'"]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
